@@ -957,6 +957,68 @@ PATCH 方法用来更新一个好友请求的状态。
 
 
 
+## EVENT `friend_added`
+
+### 描述
+
+服务器提醒客户端某个好友被成功添加了。
+
+> 注意：
+>
+> - `friend_request_update`：只用来通知好友请求的状态更新
+> - 如果更新 friend_request 时发现某个人将状态置为 Accepted，就可以在服务端的数据库添加好友关系
+> - 数据库中添加好友关系后，再进行 `friend_added` 通知，告知**请求的两方**好友关系
+> - 这样可以避免耦合，也方便设计 socket handler
+
+### 服务器到客户端的数据
+
+```json
+{
+    "user": {
+        "userId": "<string>",
+        "userName": "<string>",
+        "phoneNumber": "<string>",
+        "emailAddress": "<string>",
+        "avatarUrl": "<string>"
+    }
+}
+```
+
+> 注意：如果是 A 和 B 之间的好友请求，则应该给 A 发 userB，给 B 发 userA
+
+
+
+## EVENT `friend_removed`
+
+### 描述
+
+服务器提醒客户端好友关系被删除了。
+
+> 注意：
+>
+> - HTTP api 中，有 `/friends/{friendId}` 的 DELETE 方法。该方法显然只能用于单向删除好友。
+> - 如果想要双向删除好友，则可以用该 API 从 socket 中通知两人。
+> - 至于只做单向删除还是做双向删除，可以由后端自行决定。前端只设置对应的 handler。
+> - 总之，删除好友的 HTTP api 和 socket api 都要实现，然后按需处理业务逻辑即可。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "user": {
+        "userId": "<string>",
+        "userName": "<string>",
+        "phoneNumber": "<string>",
+        "emailAddress": "<string>",
+        "avatarUrl": "<string>"
+    }
+}
+```
+
+> 注意：如果是 A 和 B 之间的好友关系解除，则应该给 A 发 userB，给 B 发 userA
+
+
+
 ## EVENT `friend_profile_update`
 
 ### 描述
