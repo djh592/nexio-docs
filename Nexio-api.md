@@ -277,7 +277,7 @@
 
 #### 错误响应
 
-- 当输入密码与jwt负载不匹配时，会将状态码设置为 403，错误响应格式为：
+- 当jwt负载不匹配时，会将状态码设置为 403，错误响应格式为：
 
 ```json
 {
@@ -342,7 +342,7 @@
 
 #### 错误响应
 
-- 当输入密码与jwt负载不匹配时，会将状态码设置为 403，错误响应格式为：
+- 当jwt负载不匹配时，会将状态码设置为 403，错误响应格式为：
 
 ```json
 {
@@ -375,7 +375,7 @@
 ```json
 {  
     "oldPassword": "123456",
-    "newPassword": "",
+    "newPassword": "654321",
     "userName": "xxx",
     "phoneNumber": "123",
     "emailAddress": "abc@123",
@@ -397,8 +397,9 @@
 {
     "code": 0,
     "info": "Succeed",
+    "token": "***.***.***", // JWT
     "user": {
-        "userId": "1",
+        "userId": "user.id",
         "userName": "xxx",
         "phoneNumber": "123",
         "emailAddress": "abc@123",
@@ -409,7 +410,7 @@
 
 #### 错误响应
 
-- 当输入密码与jwt负载不匹配时，会将状态码设置为 403，错误响应格式为：
+- 当jwt负载不匹配时，会将状态码设置为 403，错误响应格式为：
 
 ```json
 {
@@ -471,6 +472,8 @@
 
 - `query`：搜索关键词（用户名、邮箱等）
 
+#### 关于用户查询API,还没有全部实现
+
 #### 成功响应
 
 请求成功时，应当设置状态码为 200 OK，成功响应格式为：
@@ -498,9 +501,9 @@
 
 ## URL `/friends/groups`
 
-该 API 用于创建好友分组
+该 API 用于创建、删除和更改好友分组
 
-该 API 仅接受以 POST 和 PATCH 方法的请求。以其他方法请求均应当设置状态码为 405 Method Not Allowed，错误响应格式为：
+该 API 仅接受以 POST 和 PATCH 和DELETE方法的请求。以其他方法请求均应当设置状态码为 405 Method Not Allowed，错误响应格式为：
 
 ```json
 {
@@ -511,7 +514,7 @@
 
 ### POST
 
-使用 POST 方法新建一个空分组。（即，当前的组刚刚创建，还没有
+使用 POST 方法新建一个空分组。（即，当前的组刚刚创建，还没有添加用户）
 
 #### 请求头
 
@@ -546,6 +549,139 @@
 }
 ```
 
+#### 失败响应
+
+当没有jwt令牌时，设置状态码403(之后出错的状态码统一403)，格式：
+
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+}
+```
+
+当创建者不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "用户不存在或已注销",
+}
+```
+
+当要创建的组已存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "组已存在",
+}
+```
+
+### DELETE
+
+使用 DELETE 方法删除一个分组。
+
+#### 请求头
+
+使用 DELETE 方法请求该 API 时需要携带 JWT 令牌验证身份。请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+#### 请求体
+
+```json
+{
+    "userId": "<string>",
+	"groupName": "<string>",
+}
+```
+
+上述字段的说明为：
+
+- `userId`：分组创建者的用户 id，用于标识是谁创建的分组。
+- `groupName`：需要删除的组名，可以为任意类型的字符串，但是不可以是 "My Friends"
+
+> **注：**默认的组名是"My Friends"，见 appendix
+>
+> "My Friends" 不可以删除，可能会删掉所有的组
+>
+> 删除后，将原先组中所有的用户移动到 "My Friends" 中，前端会同步做这个操作
+
+#### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+	"info": "Succeed",
+	"FriendGroups": [
+        {
+           	groupName: "My Friends",
+        	friends: [
+      	       {
+      				"userId": "<string>",
+     				"userName": "<string>",
+	  				"phoneNumber": "<string>",
+    				"emailAddress": "<string>",
+      				"avatarUrl": "<string>",
+    			},
+    			{
+     				"userId": "<string>",
+      				"userName": "<string>",
+      				"phoneNumber": "<string>",
+      				"emailAddress": "<string>",
+      				"avatarUrl": "<string>",
+    			}
+            ]
+        },
+        {
+            groupName: "<string>",
+            friends: [
+                ...
+            ]
+        }
+    ]
+}
+```
+
+#### 失败响应
+
+当没有jwt令牌时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+}
+```
+
+当用户不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "用户不存在或已注销",
+}
+```
+
+当要删除的组不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "要删除的组不存在",
+}
+```
+
+当试图删除默认组"My Friends"时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "不能删除默认分组",
+}
+```
+
 ### PATCH
 
 使用 PATCH 更改好友的分组。即，将好友从一个组移动到另一个组。
@@ -565,14 +701,14 @@
 }
 ```
 
-上述字段的说明为：
+ 上述字段的说明为：
 
 -  `userId`：用户自己的 id
 
 -  `friendUserId`：要移动的好友 id
 
--  `fromGroupName`：原先的组名，必须是现有的组名
--  `toGroupName`：新的组名，必须是现有的组名
+- `fromGroupName`：原先的组名，必须是现有的组名
+- `toGroupName`：新的组名，必须是现有的组名
 
 > 需要处理：
 >
@@ -593,7 +729,69 @@
 }
 ```
 
+#### 失败响应
 
+当没有jwt令牌时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+}
+```
+
+当用户不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "用户不存在或已注销",
+}
+```
+
+当好友不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "好友不存在或已注销",
+}
+```
+当原组不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "原组不存在",
+}
+```
+
+当新组不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "新组不存在",
+}
+```
+
+当输入的两个用户并非好友关系时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "非好友关系",
+}
+```
+
+当好友不在原组中时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "好友不在原组中",
+}
+```
 
 ## URL `/friends`
 
@@ -636,7 +834,7 @@
 {
   	"code": 0,
   	"info": "Succeed",
-    "FriendGroups": [
+    "friendGroups": [
         {
            	groupName: "My Friends",
         	friends: [
@@ -670,18 +868,18 @@
 >
 >```typescript
 >export type User = {
->userId: string;
->userName: string;
->phoneNumber: string;
->emailAddress: string;
->avatarUrl: string;
+>    userId: string;
+>    userName: string;
+>    phoneNumber: string;
+>    emailAddress: string;
+>    avatarUrl: string;
 >};
 >
 >export type Friends = User[];
 >
 >export type FriendGroup = {
->groupName: string;
->friends: Friends;
+>    groupName: string;
+>    friends: Friends;
 >};
 >
 >export type FriendGroups = FriendGroup[];
@@ -689,16 +887,34 @@
 >export const DEFAULT_GROUP_NAME = "My Friends";
 >
 >export const initialFriendGroups: FriendGroups = [
->{
->   groupName: DEFAULT_GROUP_NAME,
->   friends: []
->}
+>    {
+>        groupName: DEFAULT_GROUP_NAME,
+>        friends: []
+>    }
 >];
 >```
 >
 >数据结构比较复杂，要小心实现
 
+#### 失败响应
 
+当没有jwt令牌时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+}
+```
+
+当用户不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "用户不存在或已注销",
+}
+```
 
 ## URL `/friends/requests`
 
@@ -741,7 +957,17 @@ GET 方法用来查看用户发送和接收到的所有好友请求。
 {
   	"code": 0,
   	"info": "Succeed",
-    "FriendRequests": [
+    "sentRequests": [
+    	{
+            requestId: "<string>",
+    		createdAt: "<string>",
+    		fromUserId: "<string>",
+    		toUserId: "<string>",
+    		status: "<FriendRequestStatus>"
+        }
+        ...
+    ],
+    "receivedRequests": [
     	{
             requestId: "<string>",
     		createdAt: "<string>",
@@ -751,6 +977,7 @@ GET 方法用来查看用户发送和接收到的所有好友请求。
         }
         ...
     ]
+    
 }
 ```
 
@@ -758,23 +985,43 @@ GET 方法用来查看用户发送和接收到的所有好友请求。
 >
 >```typescript
 >export enum FriendRequestStatus {
->Pending = 'Pending', // 发送中
->Accepted = 'Accepted', // 同意请求
->Rejected = 'Rejected', // 拒绝请求
->Canceled = 'Canceled', // 撤回请求
->Failed = 'Failed' // 服务器错误
+>    Pending = 'Pending', // 发送中
+>    Accepted = 'Accepted', // 同意请求
+>    Rejected = 'Rejected', // 拒绝请求
+>    Canceled = 'Canceled', // 撤回请求
+>    Failed = 'Failed' // 服务器错误
 >}
 >
 >export type FriendRequest = {
->requestId: string;
->createdAt: string;
->fromUserId: string;
->toUserId: string;
->status: FriendRequestStatus;
+>    requestId: string;
+>    createdAt: string;
+>    fromUserId: string;
+>    toUserId: string;
+>    status: FriendRequestStatus;
 >};
 >```
 >
->返回一个 FriendRequest 的列表
+>返回两个 FriendRequest 的列表，一个是该用户发出的"sentRequests"，另一个是该用户接收到的"receivedRequests"
+
+#### 失败响应
+
+当没有jwt令牌时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+}
+```
+
+当用户不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "用户不存在或已注销",
+}
+```
 
 ### POST
 
@@ -806,13 +1053,51 @@ POST 方法用来发送一个新的好友请求。
 {
   	"code": 0,
   	"info": "Succeed",
-    "FriendRequest": {
+    "friendRequest": {
     	requestId: "<string>",
     	createdAt: "<string>",
     	fromUserId: "<string>",
     	toUserId: "<string>",
     	status: "<FriendRequestStatus>"
 	}
+}
+```
+
+#### 失败响应
+
+当没有jwt令牌时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+}
+```
+
+当用户不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "用户不存在或已注销",
+}
+```
+
+当用户试图添加自己为好友时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "不能添加自己为好友",
+}
+```
+
+当要添加的用户已经是用户的好友时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "已经是好友",
 }
 ```
 
@@ -828,7 +1113,7 @@ PATCH 方法用来更新一个好友请求的状态。
 
 ```json
 {
-    "FriendRequest": {
+    "friendRequest": {
     	requestId: "<string>",
     	createdAt: "<string>",
     	fromUserId: "<string>",
@@ -862,7 +1147,25 @@ PATCH 方法用来更新一个好友请求的状态。
 }
 ```
 
+#### 失败响应
 
+当没有jwt令牌时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+}
+```
+
+当好友请求不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "好友请求不存在",
+}
+```
 
 ## URL `/friends/{friendId}`
 
@@ -887,7 +1190,11 @@ PATCH 方法用来更新一个好友请求的状态。
 
 #### 请求体
 
-无
+```json
+{
+    "userId": "<string>"
+}
+```
 
 #### 成功响应
 
@@ -899,8 +1206,34 @@ PATCH 方法用来更新一个好友请求的状态。
   	"info": "Succeed"
 }
 ```
+#### 失败响应
 
+当没有jwt令牌时，设置状态码403，格式：
 
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+}
+```
+
+当用户不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "用户不存在或已注销",
+}
+```
+
+当好友关系不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "好友关系不存在",
+}
+```
 
 # WebSocket API
 
@@ -940,6 +1273,7 @@ PATCH 方法用来更新一个好友请求的状态。
 >
 >- 用户取消了申请，报 Canceled
 >- 对方突然注销了（？）或者其他服务器错误，报 Failed
+>
 
 ### 服务器到客户端的数据
 
@@ -1102,7 +1436,6 @@ PATCH 方法用来更新一个好友请求的状态。
 # Appendix
 
 这里提供前端的数据类型定义，我尽量使之和 API 中的传输类型适配，可以用作参考：
-
 ```typescript
 export type User = {
     userId: string;
