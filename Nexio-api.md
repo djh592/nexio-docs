@@ -796,9 +796,9 @@
 
 ## URL `/friends`
 
-该 API 用于获取好友列表（支持分组）
+该 API 用于获取好友列表（支持分组），和删除好友
 
-该 API 仅接受以 GET 方法请求。以其他方法请求均应当设置状态码为 405 Method Not Allowed，错误响应格式为：
+该 API 接受以 GET 和 DELETE 方法请求。以其他方法请求均应当设置状态码为 405 Method Not Allowed，错误响应格式为：
 
 ```json
 {
@@ -914,6 +914,66 @@
 {
   "code": -4,
   "info": "用户不存在或已注销",
+}
+```
+
+### DELETE
+
+#### 请求头
+
+使用 DELETE 方法请求该 API 时需要携带 JWT 令牌验证身份。请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+#### 请求体
+
+```json
+{
+    "userId": "<string>"，
+    ”friendId“: "<string>"
+}
+```
+
+上述字段的说明为：
+
+-  `userId`：用户本人的 userId
+-  `friendId`：要删除的好友 userId
+
+#### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed"
+}
+```
+
+#### 失败响应
+
+当没有jwt令牌时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+}
+```
+
+当用户不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "用户不存在或已注销",
+}
+```
+
+当好友关系不存在时，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "好友关系不存在",
 }
 ```
 
@@ -1168,74 +1228,6 @@ PATCH 方法用来更新一个好友请求的状态。
 }
 ```
 
-## URL `/friends/{friendId}`
-
-> friendId：即 friend 的 userId
-
-该 API 用于用户删除指定好友。
-
-该 API 仅接受以 DELETE 方法请求。以其他方法请求均应当设置状态码为 405 Method Not Allowed，错误响应格式为：
-
-```json
-{
-    "code": -3,
-    "info": "Bad method"
-}
-```
-
-### DELETE
-
-#### 请求头
-
-使用 DELETE 方法请求该 API 时需要携带 JWT 令牌验证身份。请求头需要将 `Authorization` 字段设置为 JWT 令牌。
-
-#### 请求体
-
-```json
-{
-    "userId": "<string>"
-}
-```
-
-#### 成功响应
-
-请求成功时，应当设置状态码为 200 OK，成功响应格式为：
-
-```json
-{
-  	"code": 0,
-  	"info": "Succeed"
-}
-```
-
-#### 失败响应
-
-当没有jwt令牌时，设置状态码403，格式：
-
-```json
-{
-  "code": -4,
-  "info": "缺失令牌",
-}
-```
-
-当用户不存在时，设置状态码403，格式：
-
-```json
-{
-  "code": -4,
-  "info": "用户不存在或已注销",
-}
-```
-
-当好友关系不存在时，设置状态码403，格式：
-
-```json
-{
-  "code": -4,
-  "info": "好友关系不存在",
-}
-```
 
 
 ## GET `/chats`
