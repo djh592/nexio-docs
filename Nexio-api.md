@@ -707,8 +707,8 @@
 
 -  `friendUserId`：要移动的好友 id
 
-- `fromGroupName`：原先的组名，必须是现有的组名
-- `toGroupName`：新的组名，必须是现有的组名
+-  `fromGroupName`：原先的组名，必须是现有的组名
+-  `toGroupName`：新的组名，必须是现有的组名
 
 > 需要处理：
 >
@@ -757,6 +757,7 @@
   "info": "好友不存在或已注销",
 }
 ```
+
 当原组不存在时，设置状态码403，格式：
 
 ```json
@@ -868,18 +869,18 @@
 >
 >```typescript
 >export type User = {
->    userId: string;
->    userName: string;
->    phoneNumber: string;
->    emailAddress: string;
->    avatarUrl: string;
+>userId: string;
+>userName: string;
+>phoneNumber: string;
+>emailAddress: string;
+>avatarUrl: string;
 >};
 >
 >export type Friends = User[];
 >
 >export type FriendGroup = {
->    groupName: string;
->    friends: Friends;
+>groupName: string;
+>friends: Friends;
 >};
 >
 >export type FriendGroups = FriendGroup[];
@@ -887,10 +888,10 @@
 >export const DEFAULT_GROUP_NAME = "My Friends";
 >
 >export const initialFriendGroups: FriendGroups = [
->    {
->        groupName: DEFAULT_GROUP_NAME,
->        friends: []
->    }
+>{
+>   groupName: DEFAULT_GROUP_NAME,
+>   friends: []
+>}
 >];
 >```
 >
@@ -985,19 +986,19 @@ GET 方法用来查看用户发送和接收到的所有好友请求。
 >
 >```typescript
 >export enum FriendRequestStatus {
->    Pending = 'Pending', // 发送中
->    Accepted = 'Accepted', // 同意请求
->    Rejected = 'Rejected', // 拒绝请求
->    Canceled = 'Canceled', // 撤回请求
->    Failed = 'Failed' // 服务器错误
+>Pending = 'Pending', // 发送中
+>Accepted = 'Accepted', // 同意请求
+>Rejected = 'Rejected', // 拒绝请求
+>Canceled = 'Canceled', // 撤回请求
+>Failed = 'Failed' // 服务器错误
 >}
 >
 >export type FriendRequest = {
->    requestId: string;
->    createdAt: string;
->    fromUserId: string;
->    toUserId: string;
->    status: FriendRequestStatus;
+>requestId: string;
+>createdAt: string;
+>fromUserId: string;
+>toUserId: string;
+>status: FriendRequestStatus;
 >};
 >```
 >
@@ -1206,6 +1207,7 @@ PATCH 方法用来更新一个好友请求的状态。
   	"info": "Succeed"
 }
 ```
+
 #### 失败响应
 
 当没有jwt令牌时，设置状态码403，格式：
@@ -1234,6 +1236,531 @@ PATCH 方法用来更新一个好友请求的状态。
   "info": "好友关系不存在",
 }
 ```
+
+
+## GET `/chats`
+
+该 API 用于用户获取与自己关联的所有聊天（包括单聊和群聊）
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+     "fromUserId": "<string>",
+}
+```
+
+- `fromUserId`：查询者的 userId
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  "code": 0,
+  "info": "Succeed",
+  "chats": [
+    {
+      "chatId": "string",
+      "createdAt": "datetime",
+      "chatType": "Private|Group",
+      "chatName": "string",
+      "chatAvatarUrl": "string",
+      "chatSettings": {
+        "isMuted": false,
+        "isPinned": false
+      },
+      "messageListId": "string",
+      "participantListId": "string",
+      "notificationListId": "string",
+      "joinRequestListId": "string"
+    }
+  ]
+}
+
+```
+
+> Chats 见前端 definition 中 Chat 的定义，是一个 Chat 的列表
+
+## PATCH `/chats/{chatId}`
+
+该 API 用于用户更改某一个聊天的信息
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+    
+    "chatName": "<string>",
+    "chatAvatarImage": "<base64string>",
+    "chatSettings": "<ChatSettings>"
+}
+```
+
+> 只有群聊可以修改名称和头像，单聊的名称和头像应该由后端固定给出（名称是聊天对象的名称，头像也是对方的头像。即，给 A 发 B 的名称和头像，给 B 发 A 的名称和头像）。
+>
+> 注意返回错误情况：
+>
+> - 修改了并非自己参与的聊天
+> - 修改了单聊的名称和头像
+> - 其他可能的错误
+>
+> `ChatSettings` 类型的定义见前端的 definition.ts。definition 可能随后续的实现有改变，注意看后端仓库实时更新
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chat": "<Chat>"
+}
+
+```
+
+> 返回的 Chat 对象是后端修改后的对象，即后端修改数据库，再将数据库中的 Chat 对象读出来，返回给前端（不要直接修改程序中的数据返回给前端）
+>
+> Chat 对象的定义见前端 definition.ts
+
+## POST `/chats`
+
+该 API 用于添加一个新的聊天，或者同步前端没有获取到的聊天。
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+    "fromUserId": "<string>",
+  	"chatType": "Private|Group",
+  	"participantIds": ["<string>", "<string>", ...]
+}
+```
+
+- `fromUserId`：添加者的 userId
+- `chatType`：聊天类型
+- `participantIds`：参与者的用户 id （应该包含 `fromUserId`，不包含认定为不合法）
+
+> 注意可能有两种情况：
+>
+> - 第一种情况是聊天确实是新添加的
+>
+> - 第二种情况是由于某种原因，前端没有来得及在数据库中同步这个聊天，误认为这个聊天不存在。后端此时应先返回已经建立好的 Chat 对象
+>
+> 如果是新添加的聊天，后端需要自行设置 Chat  chatName: string;
+>
+>   chatAvatarUrl
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chat": "<Chat>"
+}
+```
+
+> 返回后端创建好的 Chat 数据
+
+## GET `/messages/{messageListId}`
+
+该 API 用于获取某个聊天的记录。
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+	"fromUserId": "<string>",
+}
+```
+
+- `fromUserId`：查询者的 userId
+
+> 该 userId 用来检查查询者是否有权限获取这些聊天记录
+>
+> 显然，只能获取自己参与的聊天的聊天记录，后端错误处理要体现这一点
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chatMessageList": "<ChatMessageList>"
+}
+```
+
+> ChatMessageList 定义参见前端数据类型定义，注意**不要**返回 id 字段
+
+## POST `/messages/{messageListId}`
+
+该 API 用于在某个MessageList中添加一个消息
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+	"fromUserId": "<string>",
+    "chatMessageContent": "<ChatMessageContent>"
+}
+```
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chatMessage": "<ChatMessage>"
+}
+```
+
+> 返回后端构建的 ChatMessage 对象。
+>
+> **注意，在这个 ChatMessage 对象对象中， ChatMessageMeta 的已读字段应当包含发送者。**即，发送者第一时间已读消息
+>
+> 此外，后端还要更新这个 chatMessage 所在的 chatMessageList 的：
+>
+> （1）回复和被回复的关系
+>
+> （2）该消息可能会影响到的任何其他消息的状态
+
+## PATCH `/messages/{messageListId}`
+
+该 API 用于修改某一个ChatMessage的状态。
+
+当前应该需要修改的应该只有 ChatMessageMeta 
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+	"fromUserId": "<string>",
+    "chatMessageMeta": "<ChatMessageMeta>"
+}
+```
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chatMessage": "<ChatMessage>"
+}
+```
+
+> 返回后端构建的 ChatMessage 对象
+>
+> 此外，后端还要更新这个 chatMessage 所在的 chatMessageList 的：
+>
+> （1）回复和被回复的关系
+>
+> （2）该消息可能会影响到的任何其他消息的状态
+>
+> 在 socket 中做出这些变更的通知
+
+## GET `/participants/{participantListId}`
+
+该 API 用于获取某个 ChatParticipantList
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+	"fromUserId": "<string>",
+}
+```
+
+- `fromUserId`：查询者的 userId
+
+> 该 userId 用来检查查询者是否有权限获取这些成员信息
+>
+> 显然，只能获取自己参与的聊天的成员信息，后端错误处理要体现这一点
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chatParticipantList": "<ChatParticipantList>"
+}
+```
+
+> ChatParticipantList 定义参见前端数据类型定义，注意**不要**返回 id 字段
+
+## PATCH `/participants/{participantListId}/`
+
+该 API 用于更新群聊用户的身份
+
+如增删管理员，转让群主
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+	"fromUserId": "<string>",
+    "chatParticipant": "<ChatParticipant>"
+}
+```
+
+- `fromUserId`：操作者的 userId
+- `chatParticipant`：操作者修改后的 ChatParticipant 数据
+
+>ChatParticipant 类型定义见前端 definition.ts
+>注意处理：
+>
+>- 该用户是否有权限更改这个 ChatParticipantList
+>- 更改后的chatParticipant是否合法（比如，chatParticipant 的 userId 不属于当前的 ChatParticipantList，就说明这是瞎改的，应当报错）
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chatParticipant": "<ChatParticipant>"
+}
+```
+
+> 返回后端更新后的 ChatParticipant 对象
+
+## GET `/notifications/{notificationListId}`
+
+该 API 用于查询某个聊天的 ChatNotificationList
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+	"fromUserId": "<string>",
+}
+```
+
+- `fromUserId`：查询者的 userId
+
+>该 userId 用来检查查询者是否有权限获取这些通知记录
+>
+>显然，只能获取自己参与的聊天的通知记录，后端错误处理要体现这一点
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chatNotificationList" : "<ChatNotificationList>",
+}
+```
+
+> ChatNotificationList 定义参见前端数据类型定义，不要返回 id 字段
+
+## POST `/notifications/{notificationListId}`
+
+该 API 用于在某个ChatNotificationList中添加ChatNotification
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+	"fromUserId": "<string>",
+    "notification": "<string>"
+}
+```
+
+- `fromUserId`：通知者的 userId
+- `notification`: 该用户要通知的消息
+
+>注意
+>
+>- 检查用户是否在对应的 ChatNotificationList 中
+>- 检查用户是否有权限发表通知，只有群主、管理员可以发通知
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chatNotification" : "<ChatNotification>",
+}
+```
+
+> 返回添加好的 ChatNotification
+
+## GET `/joinRequests/{joinRequestListId}`
+
+该 API 用于获取某个 ChatJoinRequestList（入群请求）
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+	"fromUserId": "<string>",
+}
+```
+
+- `fromUserId`：查询者的 userId
+
+>注意，检查是否有权限查询：
+>
+>- 应当只有管理员和群主可以查询该群的 ChatJoinRequestList，并且可以通过入群请求
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chatJoinRequestList" : "<ChatJoinRequestList>",
+}
+```
+
+> ChatJoinRequestList 定义参见前端数据类型定义，不要返回 id 字段
+
+## POST `/joinRequests/{joinRequestListId}`
+
+该 API 用于在某个 ChatJoinRequestList 中添加 ChatJoinRequest（入群请求）
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+	"fromUserId": "<string>",
+    "chatJoinRequest": "<ChatJoinRequest>"
+}
+```
+
+- `fromUserId`：操作者的 userId
+
+>注意：
+>
+>- 所有群成员都可以添加入群请求
+>- 但是要检查入群请求是否合法，不能是人已经在群里还要入群
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chatJoinRequest": "<ChatJoinRequest>"
+}
+```
+
+> 返回后端创建好的 ChatJoinRequest，ChatJoinRequest 的定义见前端 definition.ts
+
+## PATCH `/joinRequests/{joinRequestListId}`
+
+该 API 用于更改 ChatJoinRequestStatus。即，群主或管理员同意是否入群。
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+	"fromUserId": "<string>",
+    "chatJoinRequest": "<ChatJoinRequest>"
+}
+```
+
+- `fromUserId`：操作者的 userId
+
+>注意：
+>
+>- 只有群主和管理员可以通过/拒绝请求
+>- 但是要检查入群请求是否合法，不能是人已经在群里
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chatJoinRequest": "<ChatJoinRequest>"
+}
+```
+
+> 返回后端修改好的 ChatJoinRequest，ChatJoinRequest 的定义见前端 definition.ts
+
+
 
 # WebSocket API
 
@@ -1273,7 +1800,6 @@ PATCH 方法用来更新一个好友请求的状态。
 >
 >- 用户取消了申请，报 Canceled
 >- 对方突然注销了（？）或者其他服务器错误，报 Failed
->
 
 ### 服务器到客户端的数据
 
@@ -1436,47 +1962,215 @@ PATCH 方法用来更新一个好友请求的状态。
 # Appendix
 
 这里提供前端的数据类型定义，我尽量使之和 API 中的传输类型适配，可以用作参考：
+
 ```typescript
+// Definition of types and constants used in the application
+
+
+// User
 export type User = {
+    id?: number;
     userId: string;
     userName: string;
-    phoneNumber: string;
     emailAddress: string;
+    phoneNumber: string;
     avatarUrl: string;
 };
 
-export type Friends = User[];
+export const INITIAL_USER: User = {
+    userId: "",
+    userName: "",
+    emailAddress: "",
+    phoneNumber: "",
+    avatarUrl: "",
+};
 
+export type Users = User[];
+
+
+// FriendGroup
 export type FriendGroup = {
+    id?: number;
     groupName: string;
-    friends: Friends;
+    friends: Users;
 };
 
 export type FriendGroups = FriendGroup[];
 
-export const DEFAULT_GROUP_NAME = "My Friends";
+export const DEFAULT_FRIEND_GROUP_NAME = "My Friends";
 
-export const initialFriendGroups: FriendGroups = [
+export const INITIAL_FRIEND_GROUPS: FriendGroups = [
     {
-        groupName: DEFAULT_GROUP_NAME,
-        friends: []
-    }
+        groupName: DEFAULT_FRIEND_GROUP_NAME,
+        friends: [],
+    },
 ];
 
+
+// FriendRequest
 export enum FriendRequestStatus {
-    Pending = 'Pending', // 发送中
-    Accepted = 'Accepted', // 同意请求
-    Rejected = 'Rejected', // 拒绝请求
-    Canceled = 'Canceled', // 撤回请求
-    Failed = 'Failed' // 服务器错误
+    // Only for sent requests
+    Pending = 'Pending',
+    Canceled = 'Canceled',
+    // Only for received requests
+    Accepted = 'Accepted',
+    Rejected = 'Rejected',
+    // Error status
+    Failed = 'Failed'
 }
 
 export type FriendRequest = {
+    id?: number;
     requestId: string;
     createdAt: string;
     fromUserId: string;
     toUserId: string;
     status: FriendRequestStatus;
+}
+
+export type FriendRequests = FriendRequest[];
+
+
+// ChatMessage
+export enum ChatMessageContentType {
+    Text = 'Text',
+    Image = 'Image',
+    Video = 'Video',
+    Audio = 'Audio',
+    File = 'File',
+    Forwarded = 'Forwarded'
+}
+
+export type ChatMessageContent = {
+    contentType: ChatMessageContentType;
+    contentPayload: string;
+}
+
+export type ChatMessageMeta = {
+    withdrawn: boolean;
+    deleted: boolean;
+    readBy: string[]; // userIds
+    repliedBy: string[]; // userIds
+    replyMessageId?: string;
+}
+
+export const DEFAULT_CHAT_MESSAGE_META: ChatMessageMeta = {
+    withdrawn: false,
+    deleted: false,
+    readBy: [],
+    repliedBy: [],
 };
+
+export type ChatMessage = {
+    messageId: string;
+    createdAt: string;
+    fromUserId: string;
+    content: ChatMessageContent;
+    meta: ChatMessageMeta;
+}
+
+export type ChatMessages = ChatMessage[];
+
+export type ChatMessageList = {
+    id?: number;
+    messageListId: string;
+    messages: ChatMessages;
+};
+
+
+// ChatParticipant
+export enum ChatParticipantType {
+    Owner = 'Owner',
+    Admin = 'Admin',
+    Member = 'Member'
+};
+
+export type ChatParticipant = {
+    userId: string;
+    type: ChatParticipantType;
+};
+
+export type ChatParticipants = ChatParticipant[];
+
+export type ChatParticipantList = {
+    id?: number;
+    chatParticipantListId: string;
+    participants: ChatParticipants;
+};
+
+
+// ChatNotification
+export type ChatNotification = {
+    fromUserId: string;
+    createdAt: string;
+    notification: string;
+};
+
+export type ChatNotifications = ChatNotification[];
+
+export type ChatNotificationList = {
+    id?: number;
+    chatNotificationListId: string;
+    notifications: ChatNotifications;
+};
+
+
+// ChatJoinRequest
+export enum ChatJoinRequestStatus {
+    Pending = 'Pending',
+    Accepted = 'Accepted',
+    Rejected = 'Rejected',
+    Canceled = 'Canceled',
+    Failed = 'Failed'
+}
+
+export type ChatJoinRequest = {
+    requestId: string;
+    createdAt: string;
+    fromUserId: string;
+    toChatId: string;
+    status: ChatJoinRequestStatus;
+};
+
+export type ChatJoinRequests = ChatJoinRequest[];
+
+export type ChatJoinRequestList = {
+    id?: number;
+    joinRequestListId: string;
+    requests: ChatJoinRequests;
+};
+
+
+// Chat
+export enum ChatType {
+    Private = 'Private',
+    Group = 'Group'
+}
+
+export type ChatSettings = {
+    isMuted: boolean;
+    isPinned: boolean;
+};
+
+export const DEFAULT_CHAT_SETTINGS: ChatSettings = {
+    isMuted: false,
+    isPinned: false,
+};
+
+export type Chat = {
+    id?: number;
+    chatId: string;
+    createdAt: string;
+    chatType: ChatType;
+    chatName: string;
+    chatAvatarUrl: string;
+    chatSettings: ChatSettings;
+
+    messageListId: string;
+    participantListId: string;
+    notificationListId: string;
+    joinRequestListId: string;
+};
+
 ```
 
