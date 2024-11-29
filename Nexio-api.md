@@ -499,6 +499,62 @@
 
 
 
+## URL `/users/batch`
+
+该 API 用于通过 userId 批量查询用户。
+
+该 API 仅接受以 POST 方法请求。以其他方法请求均应当设置状态码为 405 Method Not Allowed，错误响应格式为：
+
+```json
+{
+    "code": -3,
+    "info": "Bad method"
+}
+```
+
+### POST
+
+使用 POST 方法请求该 API 表示搜索指定的用户。
+
+#### 请求头
+
+使用 POST 方法请求该 API 时需要携带 JWT 令牌验证身份。请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+#### 请求体
+
+```json
+{
+    "userIds": ["<string>", "<string>", ...];
+}
+```
+
+上述字段的说明为：
+
+- `userIds`：要查询的 User 的 id
+
+#### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+    "code": 0,
+    "info": "Succeed",
+    "users": [
+    {
+      	"userId": "<string>",
+     	"userName": "<string>",
+	  	"phoneNumber": "<string>",
+      	"emailAddress": "<string>",
+      	"avatarUrl": "<string>"
+    }
+        ...
+  ]
+}
+```
+
+
+
 ## URL `/friends/groups`
 
 该 API 用于创建、删除和更改好友分组
