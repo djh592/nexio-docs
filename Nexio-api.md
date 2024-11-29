@@ -443,7 +443,7 @@
 
 该 API 用于通过信息查询用户。
 
-该 API 仅接受以 GET 方法请求。以其他方法请求均应当设置状态码为 405 Method Not Allowed，错误响应格式为：
+该 API 仅接受以 POST 方法请求。以其他方法请求均应当设置状态码为 405 Method Not Allowed，错误响应格式为：
 
 ```json
 {
@@ -452,7 +452,7 @@
 }
 ```
 
-### GET
+### POST
 
 使用 GET 方法请求该 API 表示搜索指定的用户。
 
@@ -707,8 +707,8 @@
 
 -  `friendUserId`：要移动的好友 id
 
--  `fromGroupName`：原先的组名，必须是现有的组名
--  `toGroupName`：新的组名，必须是现有的组名
+- `fromGroupName`：原先的组名，必须是现有的组名
+- `toGroupName`：新的组名，必须是现有的组名
 
 > 需要处理：
 >
@@ -757,7 +757,6 @@
   "info": "好友不存在或已注销",
 }
 ```
-
 当原组不存在时，设置状态码403，格式：
 
 ```json
@@ -813,7 +812,7 @@
 
 使用 GET 方法请求该 API 时需要携带 JWT 令牌验证身份。请求头需要将 `Authorization` 字段设置为 JWT 令牌。
 
-#### 请求体
+#### 请求参数
 
 ```json
 {
@@ -869,18 +868,18 @@
 >
 >```typescript
 >export type User = {
->userId: string;
->userName: string;
->phoneNumber: string;
->emailAddress: string;
->avatarUrl: string;
+>    userId: string;
+>    userName: string;
+>    phoneNumber: string;
+>    emailAddress: string;
+>    avatarUrl: string;
 >};
 >
 >export type Friends = User[];
 >
 >export type FriendGroup = {
->groupName: string;
->friends: Friends;
+>    groupName: string;
+>    friends: Friends;
 >};
 >
 >export type FriendGroups = FriendGroup[];
@@ -888,10 +887,10 @@
 >export const DEFAULT_GROUP_NAME = "My Friends";
 >
 >export const initialFriendGroups: FriendGroups = [
->{
->   groupName: DEFAULT_GROUP_NAME,
->   friends: []
->}
+>    {
+>        groupName: DEFAULT_GROUP_NAME,
+>        friends: []
+>    }
 >];
 >```
 >
@@ -936,6 +935,10 @@
 
 -  `userId`：用户本人的 userId
 -  `friendId`：要删除的好友 userId
+
+#### 请求体
+
+无
 
 #### 成功响应
 
@@ -998,7 +1001,7 @@ GET 方法用来查看用户发送和接收到的所有好友请求。
 
 使用 GET方法请求该 API 时需要携带 JWT 令牌验证身份。请求头需要将 `Authorization` 字段设置为 JWT 令牌。
 
-#### 请求体
+#### 请求参数
 
 ```json
 {
@@ -1009,6 +1012,10 @@ GET 方法用来查看用户发送和接收到的所有好友请求。
 上述字段的说明为：
 
 -  `userId`：查询者的 userId
+
+#### 请求体
+
+无
 
 #### 成功响应
 
@@ -1046,19 +1053,19 @@ GET 方法用来查看用户发送和接收到的所有好友请求。
 >
 >```typescript
 >export enum FriendRequestStatus {
->Pending = 'Pending', // 发送中
->Accepted = 'Accepted', // 同意请求
->Rejected = 'Rejected', // 拒绝请求
->Canceled = 'Canceled', // 撤回请求
->Failed = 'Failed' // 服务器错误
+>    Pending = 'Pending', // 发送中
+>    Accepted = 'Accepted', // 同意请求
+>    Rejected = 'Rejected', // 拒绝请求
+>    Canceled = 'Canceled', // 撤回请求
+>    Failed = 'Failed' // 服务器错误
 >}
 >
 >export type FriendRequest = {
->requestId: string;
->createdAt: string;
->fromUserId: string;
->toUserId: string;
->status: FriendRequestStatus;
+>    requestId: string;
+>    createdAt: string;
+>    fromUserId: string;
+>    toUserId: string;
+>    status: FriendRequestStatus;
 >};
 >```
 >
@@ -1198,7 +1205,7 @@ PATCH 方法用来更新一个好友请求的状态。
 {
   	"code": 0,
   	"info": "Succeed",
-    "FriendRequest": {
+    "friendRequest": {
     	requestId: "<string>",
     	createdAt: "<string>",
     	fromUserId: "<string>",
@@ -1238,7 +1245,7 @@ PATCH 方法用来更新一个好友请求的状态。
 
 请求头需要将 `Authorization` 字段设置为 JWT 令牌。
 
-### 请求体
+### 请求参数
 
 ```json
 {
@@ -1247,6 +1254,10 @@ PATCH 方法用来更新一个好友请求的状态。
 ```
 
 - `fromUserId`：查询者的 userId
+
+### 请求体
+
+无
 
 ### 成功响应
 
@@ -1279,6 +1290,51 @@ PATCH 方法用来更新一个好友请求的状态。
 
 > Chats 见前端 definition 中 Chat 的定义，是一个 Chat 的列表
 
+## POST `/chats`
+
+该 API 用于添加一个新的聊天，或者同步前端没有获取到的聊天。
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求体
+
+```json
+{
+    "fromUserId": "<string>",
+  	"chatType": "Private|Group",
+  	"participantIds": ["<string>", "<string>", ...]
+}
+```
+
+- `fromUserId`：添加者的 userId
+- `chatType`：聊天类型
+- `participantIds`：参与者的用户 id （应该包含 `fromUserId`，不包含认定为不合法）
+
+> 注意可能有两种情况：
+>
+> - 第一种情况是聊天确实是新添加的
+>
+> - 第二种情况是由于某种原因，前端没有来得及在数据库中同步这个聊天，误认为这个聊天不存在。后端此时应先返回已经建立好的 Chat 对象
+>
+> 如果是新添加的聊天，后端需要自行设置 Chat  ChatName ChatAvatarUrl
+>
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  	"code": 0,
+  	"info": "Succeed",
+  	"chat": "<Chat>"
+}
+```
+
+> 返回后端创建好的 Chat
+
 ## PATCH `/chats/{chatId}`
 
 该 API 用于用户更改某一个聊天的信息
@@ -1291,7 +1347,7 @@ PATCH 方法用来更新一个好友请求的状态。
 
 ```json
 {
-    
+    "fromUserId": "<string>",
     "chatName": "<string>",
     "chatAvatarImage": "<base64string>",
     "chatSettings": "<ChatSettings>"
@@ -1325,9 +1381,9 @@ PATCH 方法用来更新一个好友请求的状态。
 >
 > Chat 对象的定义见前端 definition.ts
 
-## POST `/chats`
+## DELETE `/chats/{chatId}`
 
-该 API 用于添加一个新的聊天，或者同步前端没有获取到的聊天。
+该 API 用于群主解散群聊。
 
 ### 请求头
 
@@ -1338,24 +1394,18 @@ PATCH 方法用来更新一个好友请求的状态。
 ```json
 {
     "fromUserId": "<string>",
-  	"chatType": "Private|Group",
-  	"participantIds": ["<string>", "<string>", ...]
 }
 ```
 
-- `fromUserId`：添加者的 userId
-- `chatType`：聊天类型
-- `participantIds`：参与者的用户 id （应该包含 `fromUserId`，不包含认定为不合法）
+- `fromUserId`：删除者的 userId
 
 > 注意可能有两种情况：
 >
-> - 第一种情况是聊天确实是新添加的
+> - 判断是不是群主
 >
-> - 第二种情况是由于某种原因，前端没有来得及在数据库中同步这个聊天，误认为这个聊天不存在。后端此时应先返回已经建立好的 Chat 对象
+> - 判断是不是这个群的群主
 >
-> 如果是新添加的聊天，后端需要自行设置 Chat  chatName: string;
 >
->   chatAvatarUrl
 
 ### 成功响应
 
@@ -1365,11 +1415,8 @@ PATCH 方法用来更新一个好友请求的状态。
 {
   	"code": 0,
   	"info": "Succeed",
-  	"chat": "<Chat>"
 }
 ```
-
-> 返回后端创建好的 Chat 数据
 
 ## GET `/messages/{messageListId}`
 
@@ -1379,7 +1426,7 @@ PATCH 方法用来更新一个好友请求的状态。
 
 请求头需要将 `Authorization` 字段设置为 JWT 令牌。
 
-### 请求体
+### 请求参数
 
 ```json
 {
@@ -1392,6 +1439,10 @@ PATCH 方法用来更新一个好友请求的状态。
 > 该 userId 用来检查查询者是否有权限获取这些聊天记录
 >
 > 显然，只能获取自己参与的聊天的聊天记录，后端错误处理要体现这一点
+
+### 请求体
+
+无
 
 ### 成功响应
 
@@ -1564,6 +1615,7 @@ PATCH 方法用来更新一个好友请求的状态。
 ```
 
 > 返回后端更新后的 ChatParticipant 对象
+>
 
 ## GET `/notifications/{notificationListId}`
 
@@ -1573,7 +1625,7 @@ PATCH 方法用来更新一个好友请求的状态。
 
 请求头需要将 `Authorization` 字段设置为 JWT 令牌。
 
-### 请求体
+### 请参数
 
 ```json
 {
@@ -1586,6 +1638,10 @@ PATCH 方法用来更新一个好友请求的状态。
 >该 userId 用来检查查询者是否有权限获取这些通知记录
 >
 >显然，只能获取自己参与的聊天的通知记录，后端错误处理要体现这一点
+
+### 请求体
+
+无
 
 ### 成功响应
 
@@ -1614,12 +1670,12 @@ PATCH 方法用来更新一个好友请求的状态。
 ```json
 {
 	"fromUserId": "<string>",
-    "notification": "<string>"
+    "chatNotification": "<string>"
 }
 ```
 
 - `fromUserId`：通知者的 userId
-- `notification`: 该用户要通知的消息
+- `chatNotification`: 该用户要通知的消息
 
 >注意
 >
@@ -1648,7 +1704,7 @@ PATCH 方法用来更新一个好友请求的状态。
 
 请求头需要将 `Authorization` 字段设置为 JWT 令牌。
 
-### 请求体
+### 请求参数
 
 ```json
 {
@@ -1661,6 +1717,10 @@ PATCH 方法用来更新一个好友请求的状态。
 >注意，检查是否有权限查询：
 >
 >- 应当只有管理员和群主可以查询该群的 ChatJoinRequestList，并且可以通过入群请求
+
+### 请求体
+
+无
 
 ### 成功响应
 
@@ -1792,6 +1852,7 @@ PATCH 方法用来更新一个好友请求的状态。
 >
 >- 用户取消了申请，报 Canceled
 >- 对方突然注销了（？）或者其他服务器错误，报 Failed
+>
 
 ### 服务器到客户端的数据
 
@@ -1871,13 +1932,11 @@ PATCH 方法用来更新一个好友请求的状态。
 
 
 
-## EVENT `friend_profile_update`
+## EVENT `user_profile_update`
 
 ### 描述
 
-服务器提醒客户端某个好友的信息更新了。
-
-> 注意：这个 API 应该用在有好友关系的人之前通知，避免广播
+服务器提醒客户端某个用户的信息更新了。
 
 ### 服务器到客户端的数据
 
@@ -1895,50 +1954,16 @@ PATCH 方法用来更新一个好友请求的状态。
 
 
 
-## EVENT `friend_unregister`
+## EVENT `user_unregister`
 
 ### 描述
 
-服务器提醒客户端某个好友注销了。
-
-> 关于这个 api：
->
-> - 如果使用，则好友注销后从用户列表中消失
-> - 如果不使用，则发消息给注销的好友时要显示 Failed
->
-> 建议做两手准备，因为 socket 可能无法及时提醒删除好友
+服务器提醒客户端某个用户注销了。
 
 ### 服务器到客户端的数据
 
 ```json
 {
-    "user": {
-        "userId": "<string>",
-        "userName": "<string>",
-        "phoneNumber": "<string>",
-        "emailAddress": "<string>",
-        "avatarUrl": "<string>"
-    }
-}
-```
-
-
-
-## EVENT `chat_user_profile_update`
-
-### 描述
-
-服务器提醒客户端某个群友的信息更新了。
-
-> 不论群友是不是好友，都要提醒。也就是说，如果是好友，并且在同一个会话中，就要先发一遍`friend_profile_update`，再给每一个相关的会话发一遍 `chat_user_profile_update`
->
-> 因为前端初步打算将 friends 和 chat 中的用户分别存储，只能多次更新。如果之后找到更好的实现方式，可以改动该 API。
-
-### 服务器到客户端的数据
-
-```json
-{
-    "chatId": "<string>",
     "user": {
         "userId": "<string>",
         "userName": "<string>",
@@ -1954,7 +1979,6 @@ PATCH 方法用来更新一个好友请求的状态。
 # Appendix
 
 这里提供前端的数据类型定义，我尽量使之和 API 中的传输类型适配，可以用作参考：
-
 ```typescript
 // Definition of types and constants used in the application
 
@@ -2086,7 +2110,7 @@ export type ChatParticipants = ChatParticipant[];
 
 export type ChatParticipantList = {
     id?: number;
-    chatParticipantListId: string;
+    participantListId: string;
     participants: ChatParticipants;
 };
 
@@ -2102,7 +2126,7 @@ export type ChatNotifications = ChatNotification[];
 
 export type ChatNotificationList = {
     id?: number;
-    chatNotificationListId: string;
+    notificationListId: string;
     notifications: ChatNotifications;
 };
 
@@ -2129,7 +2153,7 @@ export type ChatJoinRequests = ChatJoinRequest[];
 export type ChatJoinRequestList = {
     id?: number;
     joinRequestListId: string;
-    requests: ChatJoinRequests;
+    joinRequests: ChatJoinRequests;
 };
 
 
