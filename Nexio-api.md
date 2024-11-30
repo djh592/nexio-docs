@@ -600,10 +600,13 @@
 
 ```json
 {
-  "code": 0,
-  "info": "Succeed",
+  	"code": 0,
+  	"info": "Succeed",
+    "friendGroup": "<FriendGroup>"
 }
 ```
+
+> 返回新创建好的 friendGroup
 
 #### 失败响应
 
@@ -670,7 +673,7 @@
 {
   	"code": 0,
 	"info": "Succeed",
-	"FriendGroups": [
+	"friendGroups": [
         {
            	groupName: "My Friends",
         	friends: [
@@ -780,10 +783,39 @@
 
 ```json
 {
-  "code": 0,
-  "info": "Succeed",
+  	"code": 0,
+  	"info": "Succeed",
+     "friendGroups": [
+        {
+           	groupName: "My Friends",
+        	friends: [
+      	       {
+      				"userId": "<string>",
+     				"userName": "<string>",
+	  				"phoneNumber": "<string>",
+    				"emailAddress": "<string>",
+      				"avatarUrl": "<string>",
+    			},
+    			{
+     				"userId": "<string>",
+      				"userName": "<string>",
+      				"phoneNumber": "<string>",
+      				"emailAddress": "<string>",
+      				"avatarUrl": "<string>",
+    			}
+            ]
+        },
+        {
+            groupName: "<string>",
+            friends: [
+                ...
+            ]
+        }
+    ]
 }
 ```
+
+> 返回改动后的组，或者返回所有的组，都行。只要"friendGroups"这包含那两个被改动的组，前端就可以出处理
 
 #### 失败响应
 
