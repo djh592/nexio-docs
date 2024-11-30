@@ -437,7 +437,29 @@
 }
 ```
 
+- newPassword 有值，而 oldPassword 没有值，或者 oldPassword 有值，而 newPassword 没有值(400)
+```json
+{
+    "code": 6,
+    "info": "Both oldPassword and newPassword must be provided together"
+}
+```
 
+- 验证 newPassword（新密码）是否符合长度要求
+```json
+{
+    "code": 7,
+    "info": "newPassword must be a non-empty string with a max length of 20"
+}
+```
+
+- 验证 oldPassword（旧密码）是否符合长度要求
+```json
+{
+    "code": 8,
+    "info": "oldPassword must be a non-empty string with a max length of 20."
+}
+```
 
 ## URL `/users/search`
 
