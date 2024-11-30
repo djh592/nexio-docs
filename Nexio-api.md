@@ -496,7 +496,52 @@
   ]
 }
 ```
+#### 失败响应
 
+当没有jwt令牌时，设置状态码403：
+
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+}
+```
+
+当请求方法不是 GET 时，返回如下响应：
+
+```json
+{
+    "code": -3,
+    "info": "Bad method"
+}
+```
+
+当请求头缺少 Authorization 字段时，返回如下响应：
+
+```json
+{
+    "code": -2,
+    "info": "Authorization token missing"
+}
+```
+
+当搜索的关键词没有找到任何匹配的用户时，返回如下响应：
+
+```json
+{
+    "code": 1,
+    "info": "No users found"
+}
+```
+
+当请求中没有提供 searchText 字段时，返回如下响应：
+
+```json
+{
+    "code": -4,
+    "info": "Missing searchText parameter"
+}
+```
 
 
 ## URL `/users/batch`
@@ -602,7 +647,26 @@
 {
   	"code": 0,
   	"info": "Succeed",
-    "friendGroup": "<FriendGroup>"
+    "friendGroup": 
+    {
+           	groupName: "My Friends",
+        	friends: [
+      	       {
+      				"userId": "<string>",
+     				"userName": "<string>",
+	  				"phoneNumber": "<string>",
+    				"emailAddress": "<string>",
+      				"avatarUrl": "<string>",
+    			},
+    			{
+     				"userId": "<string>",
+      				"userName": "<string>",
+      				"phoneNumber": "<string>",
+      				"emailAddress": "<string>",
+      				"avatarUrl": "<string>",
+    			}
+            ]
+        }
 }
 ```
 
