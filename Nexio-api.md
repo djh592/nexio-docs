@@ -437,14 +437,6 @@
 }
 ```
 
-- newPassword 有值，而 oldPassword 没有值，或者 oldPassword 有值，而 newPassword 没有值(400)
-```json
-{
-    "code": 6,
-    "info": "Both oldPassword and newPassword must be provided together"
-}
-```
-
 - 验证 newPassword（新密码）是否符合长度要求
 ```json
 {
@@ -1367,6 +1359,15 @@ POST 方法用来发送一个新的好友请求。
 {
   "code": -4,
   "info": "已经是好友",
+}
+```
+
+当已经存在待处理的请求，设置状态码403，格式：
+
+```json
+{
+  "code": -4,
+  "info": "已经发送过好友请求，请勿重复发送",
 }
 ```
 
