@@ -1,4 +1,4 @@
-# +HTTP API
+# HTTP API
 
 ## URL `/register`
 
@@ -438,6 +438,7 @@
 ```
 
 - 验证 newPassword（新密码）是否符合长度要求
+
 ```json
 {
     "code": 7,
@@ -446,6 +447,7 @@
 ```
 
 - 验证 oldPassword（旧密码）是否符合长度要求
+
 ```json
 {
     "code": 8,
@@ -510,6 +512,7 @@
   ]
 }
 ```
+
 #### 失败响应
 
 当请求方法不是 GET 时，返回如下响应：
@@ -602,10 +605,12 @@
   ]
 }
 ```
+
 #### 失败响应
 
 
 当请求方法不是 POST 时，返回此错误(405):
+
 ```json
 {
     "code": -3,
@@ -615,6 +620,7 @@
 
 
 如果 JWT 令牌无效或缺失(403):
+
 ```json
 {
     "code": -4,
@@ -623,6 +629,7 @@
 ```
 
 请求体格式错误（400）:
+
 ```json
 {
     "code": -3,
@@ -631,6 +638,7 @@
 ```
 
 如果没有传递 userIds（400）：
+
 ```json
 {
     "code": -3,
@@ -688,28 +696,29 @@
   	"info": "Succeed",
     "friendGroup": 
     {
-           	groupName: "My Friends",
-        	friends: [
-      	       {
-      				"userId": "<string>",
-     				"userName": "<string>",
-	  				"phoneNumber": "<string>",
-    				"emailAddress": "<string>",
-      				"avatarUrl": "<string>",
-    			},
-    			{
-     				"userId": "<string>",
-      				"userName": "<string>",
-      				"phoneNumber": "<string>",
-      				"emailAddress": "<string>",
-      				"avatarUrl": "<string>",
-    			}
-            ]
-        }
+        groupId: "<string>"
+       	groupName: "My Friends",
+       	friends: [
+        {
+      		"userId": "<string>",
+     		"userName": "<string>",
+	  		"phoneNumber": "<string>",
+    		"emailAddress": "<string>",
+    		"avatarUrl": "<string>",
+    	},
+    	{
+     		"userId": "<string>",
+      		"userName": "<string>",
+      		"phoneNumber": "<string>",
+      		"emailAddress": "<string>",
+      		"avatarUrl": "<string>",
+    	}
+       	]
+   	}
 }
 ```
 
-> 返回新创建好的 friendGroup
+> 返回新创建好的 friendGroup，注意新加了groupId
 
 #### 失败响应
 
@@ -778,6 +787,7 @@
 	"info": "Succeed",
 	"friendGroups": [
         {
+            groupId: "<string>",
            	groupName: "My Friends",
         	friends: [
       	       {
@@ -797,6 +807,7 @@
             ]
         },
         {
+            groupId: "<string>",
             groupName: "<string>",
             friends: [
                 ...
@@ -869,8 +880,8 @@
 
 -  `friendUserId`：要移动的好友 id
 
-- `fromGroupName`：原先的组名，必须是现有的组名
-- `toGroupName`：新的组名，必须是现有的组名
+-  `fromGroupName`：原先的组名，必须是现有的组名
+-  `toGroupName`：新的组名，必须是现有的组名
 
 > 需要处理：
 >
@@ -890,6 +901,7 @@
   	"info": "Succeed",
      "friendGroups": [
         {
+            groupId: "<string>",
            	groupName: "My Friends",
         	friends: [
       	       {
@@ -909,6 +921,7 @@
             ]
         },
         {
+            groupId: "<string>",
             groupName: "<string>",
             friends: [
                 ...
@@ -948,6 +961,7 @@
   "info": "好友不存在或已注销",
 }
 ```
+
 当原组不存在时，设置状态码403，格式：
 
 ```json
@@ -1029,6 +1043,7 @@
   	"info": "Succeed",
     "friendGroups": [
         {
+            groupId: "<string>",
            	groupName: "My Friends",
         	friends: [
       	       {
@@ -1048,6 +1063,7 @@
             ]
         },
         {
+            groupId: "<string>",
             groupName: "<string>",
             friends: [
                 ...
@@ -1061,18 +1077,18 @@
 >
 >```typescript
 >export type User = {
->    userId: string;
->    userName: string;
->    phoneNumber: string;
->    emailAddress: string;
->    avatarUrl: string;
+>userId: string;
+>userName: string;
+>phoneNumber: string;
+>emailAddress: string;
+>avatarUrl: string;
 >};
 >
 >export type Friends = User[];
 >
 >export type FriendGroup = {
->    groupName: string;
->    friends: Friends;
+>groupName: string;
+>friends: Friends;
 >};
 >
 >export type FriendGroups = FriendGroup[];
@@ -1080,10 +1096,10 @@
 >export const DEFAULT_GROUP_NAME = "My Friends";
 >
 >export const initialFriendGroups: FriendGroups = [
->    {
->        groupName: DEFAULT_GROUP_NAME,
->        friends: []
->    }
+>{
+>   groupName: DEFAULT_GROUP_NAME,
+>   friends: []
+>}
 >];
 >```
 >
@@ -1246,19 +1262,19 @@ GET 方法用来查看用户发送和接收到的所有好友请求。
 >
 >```typescript
 >export enum FriendRequestStatus {
->    Pending = 'Pending', // 发送中
->    Accepted = 'Accepted', // 同意请求
->    Rejected = 'Rejected', // 拒绝请求
->    Canceled = 'Canceled', // 撤回请求
->    Failed = 'Failed' // 服务器错误
+>Pending = 'Pending', // 发送中
+>Accepted = 'Accepted', // 同意请求
+>Rejected = 'Rejected', // 拒绝请求
+>Canceled = 'Canceled', // 撤回请求
+>Failed = 'Failed' // 服务器错误
 >}
 >
 >export type FriendRequest = {
->    requestId: string;
->    createdAt: string;
->    fromUserId: string;
->    toUserId: string;
->    status: FriendRequestStatus;
+>requestId: string;
+>createdAt: string;
+>fromUserId: string;
+>toUserId: string;
+>status: FriendRequestStatus;
 >};
 >```
 >
@@ -1521,7 +1537,6 @@ PATCH 方法用来更新一个好友请求的状态。
 > - 第二种情况是由于某种原因，前端没有来得及在数据库中同步这个聊天，误认为这个聊天不存在。后端此时应先返回已经建立好的 Chat 对象
 >
 > 如果是新添加的聊天，后端需要自行设置 Chat  ChatName ChatAvatarUrl
->
 
 ### 成功响应
 
@@ -1607,7 +1622,7 @@ PATCH 方法用来更新一个好友请求的状态。
 >
 > - 判断是不是这个群的群主
 >
->
+> 
 
 ### 成功响应
 
@@ -1817,7 +1832,6 @@ PATCH 方法用来更新一个好友请求的状态。
 ```
 
 > 返回后端更新后的 ChatParticipant 对象
->
 
 ## GET `/notifications/{notificationListId}`
 
@@ -2054,7 +2068,6 @@ PATCH 方法用来更新一个好友请求的状态。
 >
 >- 用户取消了申请，报 Canceled
 >- 对方突然注销了（？）或者其他服务器错误，报 Failed
->
 
 ### 服务器到客户端的数据
 
@@ -2181,6 +2194,7 @@ PATCH 方法用来更新一个好友请求的状态。
 # Appendix
 
 这里提供前端的数据类型定义，我尽量使之和 API 中的传输类型适配，可以用作参考：
+
 ```typescript
 // Definition of types and constants used in the application
 
@@ -2207,23 +2221,25 @@ export type Users = User[];
 
 
 // FriendGroup
-export type FriendGroup = {
+export type ResponseFriendGroup = {
     id?: number;
+    groupId: string;
     groupName: string;
     friends: Users;
+};
+
+export type ResponseFriendGroups = ResponseFriendGroup[];
+
+export type FriendGroup = {
+    id?: number;
+    groupId: string;
+    groupName: string;
+    friends: string[]; // userIds
 };
 
 export type FriendGroups = FriendGroup[];
 
 export const DEFAULT_FRIEND_GROUP_NAME = "My Friends";
-
-export const INITIAL_FRIEND_GROUPS: FriendGroups = [
-    {
-        groupName: DEFAULT_FRIEND_GROUP_NAME,
-        friends: [],
-    },
-];
-
 
 // FriendRequest
 export enum FriendRequestStatus {
