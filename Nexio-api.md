@@ -438,7 +438,6 @@
 ```
 
 - 验证 newPassword（新密码）是否符合长度要求
-
 ```json
 {
     "code": 7,
@@ -447,7 +446,6 @@
 ```
 
 - 验证 oldPassword（旧密码）是否符合长度要求
-
 ```json
 {
     "code": 8,
@@ -512,7 +510,6 @@
   ]
 }
 ```
-
 #### 失败响应
 
 当请求方法不是 GET 时，返回如下响应：
@@ -605,12 +602,10 @@
   ]
 }
 ```
-
 #### 失败响应
 
 
 当请求方法不是 POST 时，返回此错误(405):
-
 ```json
 {
     "code": -3,
@@ -620,7 +615,6 @@
 
 
 如果 JWT 令牌无效或缺失(403):
-
 ```json
 {
     "code": -4,
@@ -629,7 +623,6 @@
 ```
 
 请求体格式错误（400）:
-
 ```json
 {
     "code": -3,
@@ -638,7 +631,6 @@
 ```
 
 如果没有传递 userIds（400）：
-
 ```json
 {
     "code": -3,
@@ -880,8 +872,8 @@
 
 -  `friendUserId`：要移动的好友 id
 
--  `fromGroupName`：原先的组名，必须是现有的组名
--  `toGroupName`：新的组名，必须是现有的组名
+- `fromGroupName`：原先的组名，必须是现有的组名
+- `toGroupName`：新的组名，必须是现有的组名
 
 > 需要处理：
 >
@@ -961,7 +953,6 @@
   "info": "好友不存在或已注销",
 }
 ```
-
 当原组不存在时，设置状态码403，格式：
 
 ```json
@@ -1077,18 +1068,18 @@
 >
 >```typescript
 >export type User = {
->userId: string;
->userName: string;
->phoneNumber: string;
->emailAddress: string;
->avatarUrl: string;
+>    userId: string;
+>    userName: string;
+>    phoneNumber: string;
+>    emailAddress: string;
+>    avatarUrl: string;
 >};
 >
 >export type Friends = User[];
 >
 >export type FriendGroup = {
->groupName: string;
->friends: Friends;
+>    groupName: string;
+>    friends: Friends;
 >};
 >
 >export type FriendGroups = FriendGroup[];
@@ -1096,10 +1087,10 @@
 >export const DEFAULT_GROUP_NAME = "My Friends";
 >
 >export const initialFriendGroups: FriendGroups = [
->{
->   groupName: DEFAULT_GROUP_NAME,
->   friends: []
->}
+>    {
+>        groupName: DEFAULT_GROUP_NAME,
+>        friends: []
+>    }
 >];
 >```
 >
@@ -1262,19 +1253,19 @@ GET 方法用来查看用户发送和接收到的所有好友请求。
 >
 >```typescript
 >export enum FriendRequestStatus {
->Pending = 'Pending', // 发送中
->Accepted = 'Accepted', // 同意请求
->Rejected = 'Rejected', // 拒绝请求
->Canceled = 'Canceled', // 撤回请求
->Failed = 'Failed' // 服务器错误
+>    Pending = 'Pending', // 发送中
+>    Accepted = 'Accepted', // 同意请求
+>    Rejected = 'Rejected', // 拒绝请求
+>    Canceled = 'Canceled', // 撤回请求
+>    Failed = 'Failed' // 服务器错误
 >}
 >
 >export type FriendRequest = {
->requestId: string;
->createdAt: string;
->fromUserId: string;
->toUserId: string;
->status: FriendRequestStatus;
+>    requestId: string;
+>    createdAt: string;
+>    fromUserId: string;
+>    toUserId: string;
+>    status: FriendRequestStatus;
 >};
 >```
 >
@@ -1537,6 +1528,7 @@ PATCH 方法用来更新一个好友请求的状态。
 > - 第二种情况是由于某种原因，前端没有来得及在数据库中同步这个聊天，误认为这个聊天不存在。后端此时应先返回已经建立好的 Chat 对象
 >
 > 如果是新添加的聊天，后端需要自行设置 Chat  ChatName ChatAvatarUrl
+>
 
 ### 成功响应
 
@@ -1622,7 +1614,7 @@ PATCH 方法用来更新一个好友请求的状态。
 >
 > - 判断是不是这个群的群主
 >
-> 
+>
 
 ### 成功响应
 
@@ -1729,7 +1721,7 @@ PATCH 方法用来更新一个好友请求的状态。
 ```json
 {
 	"fromUserId": "<string>",
-    "chatMessageMeta": "<ChatMessageMeta>"
+    "chatMessage": "<ChatMessage>"
 }
 ```
 
@@ -1832,6 +1824,7 @@ PATCH 方法用来更新一个好友请求的状态。
 ```
 
 > 返回后端更新后的 ChatParticipant 对象
+>
 
 ## GET `/notifications/{notificationListId}`
 
@@ -1886,12 +1879,12 @@ PATCH 方法用来更新一个好友请求的状态。
 ```json
 {
 	"fromUserId": "<string>",
-    "chatNotification": "<string>"
+    "notification": "<string>"
 }
 ```
 
 - `fromUserId`：通知者的 userId
-- `chatNotification`: 该用户要通知的消息
+- `notification`: 该用户要通知的消息
 
 >注意
 >
@@ -2068,6 +2061,7 @@ PATCH 方法用来更新一个好友请求的状态。
 >
 >- 用户取消了申请，报 Canceled
 >- 对方突然注销了（？）或者其他服务器错误，报 Failed
+>
 
 ### 服务器到客户端的数据
 
@@ -2191,10 +2185,169 @@ PATCH 方法用来更新一个好友请求的状态。
 
 
 
+## EVENT `chat_update`
+
+### 描述
+
+服务器提醒客户端某个 Chat 对象的信息更新了。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "chat": "<Chat>"
+}
+```
+
+
+
+## EVENT `chat_deleted`
+
+### 描述
+
+服务器提醒客户端某个 Chat 对象被删除了。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "chatId": "<Chat>"
+}
+```
+
+
+
+## EVENT `message_list_update`
+
+### 描述
+
+服务器提醒客户端某个 ChatMessageList 对象的信息更新了。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "chatMessageList": "<ChatMessageList>"
+}
+```
+
+
+
+## EVENT `message_list_deleted`
+
+### 描述
+
+服务器提醒客户端某个 ChatMessageList对象被删除了。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "chatMessageList": "<ChatMessageList>"
+}
+```
+
+
+
+## EVENT `participant_list_update`
+
+### 描述
+
+服务器提醒客户端某个 ChatParticipantList 对象的信息更新了。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "chatParticipantList": "<ChatParticipantList>"
+}
+```
+
+
+
+## EVENT `participant_list_deleted`
+
+### 描述
+
+服务器提醒客户端某个 ChatParticipantList 对象被删除了。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "chatParticipantList": "<ChatParticipantList>"
+}
+```
+
+
+
+## EVENT `notification_list_update`
+
+### 描述
+
+服务器提醒客户端某个 ChatNotificationList 对象的信息更新了。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "chatNotificationList": "<ChatNotificationList>"
+}
+```
+
+
+
+## EVENT `notification_list_deleted`
+
+### 描述
+
+服务器提醒客户端某个 ChatNotificationList 对象被删除了。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "chatNotificationList": "<ChatNotificationList>"
+}
+```
+
+
+
+## EVENT `join_request_list_update`
+
+### 描述
+
+服务器提醒客户端某个 ChatJoinRequestList 对象的信息更新了。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "chatJoinRequestList": "<ChatJoinRequestList>"
+}
+```
+
+
+
+## EVENT `join_request_list_deleted`
+
+### 描述
+
+服务器提醒客户端某个 ChatJoinRequestList 对象被删除了。
+
+### 服务器到客户端的数据
+
+```json
+{
+    "chatJoinRequestList": "<ChatJoinRequestList>"
+}
+```
+
+
+
 # Appendix
 
 这里提供前端的数据类型定义，我尽量使之和 API 中的传输类型适配，可以用作参考：
-
 ```typescript
 // Definition of types and constants used in the application
 
@@ -2335,6 +2488,7 @@ export type ChatParticipantList = {
 
 // ChatNotification
 export type ChatNotification = {
+    notificationId: string;
     fromUserId: string;
     createdAt: string;
     notification: string;
@@ -2359,10 +2513,10 @@ export enum ChatJoinRequestStatus {
 }
 
 export type ChatJoinRequest = {
-    requestId: string;
-    createdAt: string;
+    joinRequestId: string;
     fromUserId: string;
     toChatId: string;
+    createdAt: string;
     status: ChatJoinRequestStatus;
 };
 
