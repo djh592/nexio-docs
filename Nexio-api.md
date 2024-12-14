@@ -1618,6 +1618,54 @@ PATCH 方法用来更新一个好友请求的状态。
 
 > 返回后端创建好的 Chat
 
+
+## GET `/chats/search`
+
+该 API 用于搜索聊天
+
+### 请求头
+
+请求头需要将 `Authorization` 字段设置为 JWT 令牌。
+
+### 请求参数
+
+```json
+{
+    "searchText": "xxx",
+}
+```
+
+### 成功响应
+
+请求成功时，应当设置状态码为 200 OK，成功响应格式为：
+
+```json
+{
+  "code": 0,
+  "info": "Succeed",
+  "chats": [
+    {
+      "chatId": "string",
+      "createdAt": "datetime",
+      "chatType": "Private|Group",
+      "chatName": "string",
+      "chatAvatarUrl": "string",
+      "chatSettings": {
+        "isMuted": false,
+        "isPinned": false
+      },
+      "messageListId": "string",
+      "participantListId": "string",
+      "notificationListId": "string",
+      "joinRequestListId": "string"
+    }
+  ]
+}
+```
+
+
+
+
 ## PATCH `/chats/{chatId}`
 
 该 API 用于用户更改某一个聊天的信息
