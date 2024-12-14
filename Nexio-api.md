@@ -1445,7 +1445,6 @@ PATCH 方法用来更新一个好友请求的状态。
 ```
 
 
-
 ## GET `/chats`
 
 该 API 用于用户获取与自己关联的所有聊天（包括单聊和群聊）
@@ -1499,6 +1498,40 @@ PATCH 方法用来更新一个好友请求的状态。
 
 > Chats 见前端 definition 中 Chat 的定义，是一个 Chat 的列表
 
+### 错误响应
+
+- 当使用不被允许的方法，设置状态码405，格式：
+```json
+{
+    "code": -3,
+    "info": "Bad method"
+}
+```
+- 缺失或无效的令牌
+```json
+{
+  "code": -4,
+  "info": "Missing or invalid token",
+  "status": 403
+}
+```
+- 缺失或无效的‘fromUserId’参数
+```json
+{
+  "code": -2,
+  "info": "Missing or invalid [fromUserId]",
+  "status": 400
+}
+```
+- 未找到用户
+```json
+{
+  "code": -5,
+  "info": "User not found",
+  "status": 404
+}
+```
+
 ## POST `/chats`
 
 该 API 用于添加一个新的聊天，或者同步前端没有获取到的聊天。
@@ -1541,6 +1574,47 @@ PATCH 方法用来更新一个好友请求的状态。
   	"chat": "<Chat>"
 }
 ```
+### 错误响应
+- 未找到用户
+```json
+{
+  "code": -4,
+  "info": "用户不存在",
+  "status": 403
+}
+```
+- 无效的json格式
+```json
+{
+  "code": -1,
+  "info": "Invalid JSON format",
+  "status": 400
+}
+```
+- 缺少或错误类型的 fromUserId
+```json
+{
+  "code": -2,
+  "info": "Missing or error type of [fromUserId]",
+  "status": 400
+}
+```
+- 群组用户中不存在添加者
+```json
+{
+  "code": -4,
+  "info": "群组用户中不存在添加者",
+  "status": 403
+}
+```
+- 群组用户注销或不存在
+```json
+{
+  "code": -4,
+  "info": "群组用户 {id} 注销或不存在",
+  "status": 403
+}
+```
 
 > 返回后端创建好的 Chat
 
@@ -1557,9 +1631,7 @@ PATCH 方法用来更新一个好友请求的状态。
 ```json
 {
     "fromUserId": "<string>",
-    "chatName": "<string>",
-    "chatAvatarImage": "<base64string>",
-    "chatSettings": "<ChatSettings>"
+    "chat": "<Chat>"
 }
 ```
 
@@ -1588,7 +1660,74 @@ PATCH 方法用来更新一个好友请求的状态。
 
 > 返回的 Chat 对象是后端修改后的对象，即后端修改数据库，再将数据库中的 Chat 对象读出来，返回给前端（不要直接修改程序中的数据返回给前端）
 >
-> Chat 对象的定义见前端 definition.ts
+> Chat 对象的定义见前端 definition.ts1
+
+### 错误响应
+- 未找到用户
+```json
+{
+  "code": -4,
+  "info": "用户不存在",
+  "status": 403
+}
+```
+- 修改了并非自己参与的聊天
+```json
+{
+  "code": -4,
+  "info": "修改了并非自己参与的聊天",
+  "status": 403
+}
+```
+- 修改了单聊的名称和头像
+```json
+{
+  "code": -4,
+  "info": "修改了单聊的名称和头像",
+  "status": 403
+}
+```
+- 群聊成员无权限修改群聊公有信息
+```json
+{
+  "code": -4,
+  "info": "群聊成员无权限修改群聊公有信息",
+  "status": 403
+}
+```
+- 缺失令牌
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+  "status": 403
+}
+```
+- 无效的 JSON 格式
+```json
+{
+  "code": -1,
+  "info": "Invalid JSON format",
+  "status": 400
+}
+```
+- 错误的请求方法
+```json
+{
+  "code": -3,
+  "info": "Bad method",
+  "status": 405
+}
+```
+- 聊天不存在
+```json
+{
+  "code": -4,
+  "info": "聊天不存在",
+  "status": 403
+}
+```
+
 
 ## DELETE `/chats/{chatId}`
 
@@ -1626,6 +1765,57 @@ PATCH 方法用来更新一个好友请求的状态。
   	"info": "Succeed",
 }
 ```
+
+### 错误响应
+- 未找到用户
+```json
+{
+  "code": -4,
+  "info": "用户不存在",
+  "status": 403
+}
+```
+- 非群主
+```json
+{
+  "code": -4,
+  "info": "非群主",
+  "status": 403
+}
+```
+- 缺失令牌
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+  "status": 403
+}
+```
+- 无效的 JSON 格式
+```json
+{
+  "code": -1,
+  "info": "Invalid JSON format",
+  "status": 400
+}
+```
+- 错误的请求方法
+```json
+{
+  "code": -3,
+  "info": "Bad method",
+  "status": 405
+}
+```
+- 聊天不存在
+```json
+{
+  "code": -4,
+  "info": "聊天不存在",
+  "status": 403
+}
+```
+
 
 ## GET `/messages/{messageListId}`
 
@@ -1680,7 +1870,7 @@ PATCH 方法用来更新一个好友请求的状态。
 ```json
 {
 	"fromUserId": "<string>",
-    "chatMessageContent": "<ChatMessageContent>"
+    "chatMessageContents": ["<ChatMessageContent>", "<ChatMessageContent>",,,]
 }
 ```
 
@@ -1688,11 +1878,11 @@ PATCH 方法用来更新一个好友请求的状态。
 
 请求成功时，应当设置状态码为 200 OK，成功响应格式为：
 
-```json
+```,
 {
-  	"code": 0,
+  	"code": 0
   	"info": "Succeed",
-  	"chatMessage": "<ChatMessage>"
+  	"chatMessages": ["<ChatMessage>","<ChatMessage>"]
 }
 ```
 
@@ -1957,12 +2147,15 @@ PATCH 方法用来更新一个好友请求的状态。
 
 ```json
 {
-	"fromUserId": "<string>",
-    "chatJoinRequest": "<ChatJoinRequest>"
+	"userId": "<string>",
+     “fromUserId”: "<string>",
+     "toChatId": "<string>",
 }
 ```
 
-- `fromUserId`：操作者的 userId
+- `UserId`：操作者的 userId
+- `fromUserId`：入群者的userId
+- `toChatId`：群聊的chat id
 
 >注意：
 >
@@ -1977,11 +2170,23 @@ PATCH 方法用来更新一个好友请求的状态。
 {
   	"code": 0,
   	"info": "Succeed",
-  	"chatJoinRequest": "<ChatJoinRequest>"
 }
 ```
 
 > 返回后端创建好的 ChatJoinRequest，ChatJoinRequest 的定义见前端 definition.ts
+>
+> 错误响应挑出来 重复申请1
+
+```json
+{
+  	"code": 1,
+  	"info": "重复申请"
+}
+```
+
+
+
+
 
 ## PATCH `/joinRequests/{joinRequestListId}`
 
@@ -1995,12 +2200,12 @@ PATCH 方法用来更新一个好友请求的状态。
 
 ```json
 {
-	"fromUserId": "<string>",
+	“fromUserId”: "<string>",
     "chatJoinRequest": "<ChatJoinRequest>"
 }
 ```
 
-- `fromUserId`：操作者的 userId
+- `UserId`：操作者的 userId
 
 >注意：
 >
@@ -2327,6 +2532,8 @@ PATCH 方法用来更新一个好友请求的状态。
 }
 ```
 
+> 群主，管理员有权限获得该通知
+
 
 
 ## EVENT `join_request_list_deleted`
@@ -2516,8 +2723,8 @@ export type ChatJoinRequest = {
     joinRequestId: string;
     fromUserId: string;
     toChatId: string;
-    createdAt: string;
-    status: ChatJoinRequestStatus;
+    createdAt: string; #
+    status: ChatJoinRequetStatus; #
 };
 
 export type ChatJoinRequests = ChatJoinRequest[];
