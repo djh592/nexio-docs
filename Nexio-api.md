@@ -1878,11 +1878,11 @@ PATCH 方法用来更新一个好友请求的状态。
 
 请求成功时，应当设置状态码为 200 OK，成功响应格式为：
 
-```,
+```json
 {
   	"code": 0
   	"info": "Succeed",
-  	"chatMessages": ["<ChatMessage>","<ChatMessage>"]
+  	// "chatMessages": ["<ChatMessage>","<ChatMessage>"]
 }
 ```
 
@@ -1967,7 +1967,7 @@ PATCH 方法用来更新一个好友请求的状态。
 {
   	"code": 0,
   	"info": "Succeed",
-  	"chatParticipantList": "<ChatParticipantList>"
+  	// "chatParticipantList": "<ChatParticipantList>"
 }
 ```
 
@@ -2009,7 +2009,7 @@ PATCH 方法用来更新一个好友请求的状态。
 {
   	"code": 0,
   	"info": "Succeed",
-  	"chatParticipant": "<ChatParticipant>"
+  	// "chatParticipant": "<ChatParticipant>"
 }
 ```
 
@@ -2089,7 +2089,7 @@ PATCH 方法用来更新一个好友请求的状态。
 {
   	"code": 0,
   	"info": "Succeed",
-  	"chatNotification" : "<ChatNotification>",
+  	// "chatNotification" : "<ChatNotification>",
 }
 ```
 
@@ -2147,14 +2147,14 @@ PATCH 方法用来更新一个好友请求的状态。
 
 ```json
 {
+    “fromUserId”: "<string>",
 	"userId": "<string>",
-     “fromUserId”: "<string>",
-     "toChatId": "<string>",
+    "toChatId": "<string>",
 }
 ```
 
-- `UserId`：操作者的 userId
-- `fromUserId`：入群者的userId
+- `UserId`：入群者的userId
+- `fromUserId`：操作者的 userId
 - `toChatId`：群聊的chat id
 
 >注意：
@@ -2205,7 +2205,7 @@ PATCH 方法用来更新一个好友请求的状态。
 }
 ```
 
-- `UserId`：操作者的 userId
+- `fromUserId`：操作者的 userId
 
 >注意：
 >
