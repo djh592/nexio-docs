@@ -1618,7 +1618,6 @@ PATCH 方法用来更新一个好友请求的状态。
 
 > 返回后端创建好的 Chat
 
-
 ## GET `/chats/search`
 
 该 API 用于搜索聊天
@@ -1660,6 +1659,44 @@ PATCH 方法用来更新一个好友请求的状态。
       "joinRequestListId": "string"
     }
   ]
+}
+```
+
+### 失败响应
+
+当请求方法不是 GET 时，返回如下响应：
+
+```json
+{
+    "code": -3,
+    "info": "Bad method"
+}
+```
+
+当没有jwt令牌时，返回如下响应：
+
+```json
+{
+    "code": -2,
+    "info": "Authorization token missing"
+}
+```
+
+当搜索的关键词没有找到任何匹配的聊天时，返回如下响应：
+
+```json
+{
+    "code": 1,
+    "info": "No chats found"
+}
+```
+
+当请求中没有提供 searchText 字段时，返回如下响应：
+
+```json
+{
+    "code": -4,
+    "info": "Missing searchText parameter"
 }
 ```
 
@@ -1904,6 +1941,40 @@ PATCH 方法用来更新一个好友请求的状态。
 
 > ChatMessageList 定义参见前端数据类型定义，注意**不要**返回 id 字段
 
+### 错误响应
+- 缺失令牌
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+  "status": 403
+}
+```
+- 用户不存在或已注销
+```json
+{
+    "code": -4,
+    "info": "用户不存在或已注销",
+    "status": 403
+}
+```
+- 聊天不存在
+```json
+{
+    "code": -4,
+    "info": "聊天不存在",
+    "status": 403
+}
+```
+- 无权限获取聊天记录
+```json
+{
+    "code": -4,
+    "info": "无权限获取聊天记录",
+    "status": 403
+}
+```
+
 ## POST `/messages/{messageListId}`
 
 该 API 用于在某个MessageList中添加一个消息
@@ -1942,6 +2013,48 @@ PATCH 方法用来更新一个好友请求的状态。
 > （1）回复和被回复的关系
 >
 > （2）该消息可能会影响到的任何其他消息的状态
+
+### 错误响应
+- 缺失令牌
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+  "status": 403
+}
+```
+- 用户不存在或已注销
+```json
+{
+    "code": -4,
+    "info": "用户不存在或已注销",
+    "status": 403
+}
+```
+- 聊天不存在
+```json
+{
+    "code": -4,
+    "info": "聊天不存在",
+    "status": 403
+}
+```
+- 无权限获取聊天记录
+```json
+{
+    "code": -4,
+    "info": "无权限获取聊天记录",
+    "status": 403
+}
+```
+- Invalid JSON format
+```json
+{
+    "code": -1,
+    "info": "Invalid JSON format",
+    "status": 400
+}
+```
 
 ## PATCH `/messages/{messageListId}`
 
@@ -1984,6 +2097,56 @@ PATCH 方法用来更新一个好友请求的状态。
 >
 > 在 socket 中做出这些变更的通知
 
+### 错误响应
+- 缺失令牌
+```json
+{
+  "code": -4,
+  "info": "缺失令牌",
+  "status": 403
+}
+```
+- 用户不存在或已注销
+```json
+{
+    "code": -4,
+    "info": "用户不存在或已注销",
+    "status": 403
+}
+```
+- 聊天不存在
+```json
+{
+    "code": -4,
+    "info": "聊天不存在",
+    "status": 403
+}
+```
+- 无权限获取聊天记录
+```json
+{
+    "code": -4,
+    "info": "无权限获取聊天记录",
+    "status": 403
+}
+```
+- 消息不存在
+```json
+{
+    "code": -4,
+    "info": "消息不存在",
+    "status": 403
+}
+```
+- Invalid JSON format
+```json
+{
+    "code": -1,
+    "info": "Invalid JSON format",
+    "status": 400
+}
+```
+
 ## GET `/participants/{participantListId}`
 
 该 API 用于获取某个 ChatParticipantList
@@ -2019,6 +2182,43 @@ PATCH 方法用来更新一个好友请求的状态。
 ```
 
 > ChatParticipantList 定义参见前端数据类型定义，注意**不要**返回 id 字段
+
+### 错误响应
+- 缺失令牌，错误码403
+```json
+{
+    "code": -4,
+    "info": "缺失令牌"
+}
+```
+- 缺少或错误的 fromUserId
+```json
+{
+    "code": -2,
+    "info": "Missing or error type of [fromUserId]"
+}
+```
+- 用户不存在或已注销
+```json
+{
+    "code": -4,
+    "info": "用户不存在或已注销"
+}
+```
+- 聊天不存在
+```json
+{
+    "code": -4,
+    "info": "聊天不存在"
+}
+```
+- 无权限获取聊天成员信息
+```json
+{
+    "code": -4,
+    "info": "无权限获取聊天成员信息"
+}
+```
 
 ## PATCH `/participants/{participantListId}/`
 
@@ -2063,6 +2263,51 @@ PATCH 方法用来更新一个好友请求的状态。
 > 返回后端更新后的 ChatParticipant 对象
 >
 
+### 错误响应
+- 缺失令牌，错误码403
+```json
+{
+    "code": -4,
+    "info": "缺失令牌"
+}
+```
+- 缺少或错误的 fromUserId 或 chatParticipant
+```json
+{
+    "code": -2,
+    "info": "Missing or error type of [fromUserId] or [chatParticipant]"
+}
+```
+- 用户不存在或已注销
+```json
+{
+    "code": -4,
+    "info": "用户不存在或已注销"
+}
+```
+- 聊天不存在
+```json
+{
+    "code": -4,
+    "info": "聊天不存在"
+}
+```
+- 无权限获取聊天成员信息
+```json
+{
+    "code": -4,
+    "info": "无权限获取聊天成员信息"
+}
+```
+- 成员不存在于该聊天中
+```json
+{
+    "code": -4,
+    "info": "成员不存在于该聊天中"
+}
+```
+
+
 ## GET `/notifications/{notificationListId}`
 
 该 API 用于查询某个聊天的 ChatNotificationList
@@ -2103,6 +2348,43 @@ PATCH 方法用来更新一个好友请求的状态。
 
 > ChatNotificationList 定义参见前端数据类型定义，不要返回 id 字段
 
+### 错误响应
+- 缺失令牌，错误码403
+```json
+{
+    "code": -4,
+    "info": "缺失令牌"
+}
+```
+- 缺少或错误的 fromUserId
+```json
+{
+    "code": -2,
+    "info": "Missing or error type of [fromUserId]"
+}
+```
+- 用户不存在或已注销
+```json
+{
+    "code": -4,
+    "info": "用户不存在或已注销"
+}
+```
+- 聊天不存在
+```json
+{
+    "code": -4,
+    "info": "聊天不存在"
+}
+```
+- 无权限获取通知信息
+```json
+{
+    "code": -4,
+    "info": "无权限获取通知记录"
+}
+```
+
 ## POST `/notifications/{notificationListId}`
 
 该 API 用于在某个ChatNotificationList中添加ChatNotification
@@ -2141,6 +2423,50 @@ PATCH 方法用来更新一个好友请求的状态。
 ```
 
 > 返回添加好的 ChatNotification
+
+### 错误响应
+- 缺失令牌，错误码403
+```json
+{
+    "code": -4,
+    "info": "缺失令牌"
+}
+```
+- 缺少或错误的 fromUserId
+```json
+{
+    "code": -2,
+    "info": "Missing or error type of [fromUserId]"
+}
+```
+- 用户不存在或已注销
+```json
+{
+    "code": -4,
+    "info": "用户不存在或已注销"
+}
+```
+- 聊天不存在
+```json
+{
+    "code": -4,
+    "info": "聊天不存在"
+}
+```
+- 无权限发表通知
+```json
+{
+    "code": -4,
+    "info": "无权限发表通知"
+}
+```
+- 只有群主或管理员可以发表通知
+```json
+{
+    "code": -4,
+    "info": "只有群主或管理员可以发表通知"
+}
+```
 
 ## GET `/joinRequests/{joinRequestListId}`
 
@@ -2182,6 +2508,43 @@ PATCH 方法用来更新一个好友请求的状态。
 
 > ChatJoinRequestList 定义参见前端数据类型定义，不要返回 id 字段
 
+### 错误响应
+- 缺失令牌，错误码403
+```json
+{
+    "code": -4,
+    "info": "缺失令牌"
+}
+```
+- 缺少 fromUserId 参数或类型错误，错误码400：
+```json
+{
+    "code": -2,
+    "info": "Missing or error type of [fromUserId]"
+}
+```
+- 用户不存在或已注销，错误码403：
+```json
+{
+    "code": -4,
+    "info": "用户不存在或已注销"
+}
+```
+- 聊天不存在，错误码403：
+```json
+{
+    "code": -4,
+    "info": "聊天不存在"
+}
+```
+- 无权限获取聊天成员信息，错误码403：
+```json
+{
+    "code": -4,
+    "info": "无权限获取聊天成员信息"
+}
+```
+
 ## POST `/joinRequests/{joinRequestListId}`
 
 该 API 用于在某个 ChatJoinRequestList 中添加 ChatJoinRequest（入群请求）
@@ -2222,7 +2585,7 @@ PATCH 方法用来更新一个好友请求的状态。
 
 > 返回后端创建好的 ChatJoinRequest，ChatJoinRequest 的定义见前端 definition.ts
 >
-> 错误响应挑出来 重复申请1
+重复申请，状态码也是200
 
 ```json
 {
@@ -2231,7 +2594,21 @@ PATCH 方法用来更新一个好友请求的状态。
 }
 ```
 
-
+### 错误响应
+- 缺失令牌，错误码403
+```json
+{
+    "code": -4,
+    "info": "缺失令牌"
+}
+```
+- 缺少 userId 或 toChatId 参数或类型错误，错误码400
+```json
+{
+    "code": -2,
+    "info": "Missing or error type of [userId] or [toChatId]"
+}
+```
 
 
 
@@ -2273,7 +2650,49 @@ PATCH 方法用来更新一个好友请求的状态。
 
 > 返回后端修改好的 ChatJoinRequest，ChatJoinRequest 的定义见前端 definition.ts
 
-
+### 错误响应
+- 缺失令牌，错误码403
+```json
+{
+    "code": -4,
+    "info": "缺失令牌"
+}
+```
+- 缺少 chatJoinRequest 参数或类型错误，错误码是400
+```json
+{
+    "code": -2,
+    "info": "Missing or error type of [chatJoinRequest]"
+}
+```
+- 缺少 joinRequestId 或 status 参数或类型错误，错误码是400
+```json
+{
+    "code": -2,
+    "info": "Missing or error type of [joinRequestId] or [status]"
+}
+```
+- 无权限更改入群请求
+```json
+{
+    "code": -4,
+    "info": "无权限获取聊天成员信息"
+}
+```
+- 成员不存在于该聊天中
+```json
+{
+    "code": -4,
+    "info": "成员不存在于该聊天中"
+}
+```
+- 请求方法错误
+```json
+{
+    "code": -3,
+    "info": "Bad method"
+}
+```
 
 # WebSocket API
 
